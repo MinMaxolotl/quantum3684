@@ -35,3 +35,5 @@ To create and switch to a branch, use the command
 To switch to an existing branch, use
 
 `git checkout new_branch_name`
+  
+This line doesn't add any value
