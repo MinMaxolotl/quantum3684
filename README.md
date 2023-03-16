@@ -7,6 +7,12 @@ Quantum3684
 
 A python package to hold VT Qode and projects
 
+This repository is currently under development. To do a development install, download this repository and type
+
+`pip install -e .`
+
+in the repository directory.
+
 ### Copyright
 
 Copyright (c) 2023, Maxwell Kawada
