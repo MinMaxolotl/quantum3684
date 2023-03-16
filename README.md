@@ -26,3 +26,5 @@ Project based on the
 This package requires the following:
   - numpy
   - matplotlib
+
+  This line doesn't add any value
