@@ -54,8 +54,6 @@ def zen(with_attribution=True):
 
     return quote
 
-import numpy as np
-import math             
 
 
 class BitString:
@@ -124,9 +122,6 @@ class BitString:
 
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
-import random
-import scipy
 
 def energy(bs: BitString, G: nx.Graph):
     """Compute energy of configuration, `bs`
