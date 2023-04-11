@@ -122,6 +122,12 @@ class BitString:
                 print("These are not the same")
 
 
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+import scipy
+
 def energy(bs: BitString, G: nx.Graph):
     """Compute energy of configuration, `bs`
 
