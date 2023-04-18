@@ -1,3 +1,6 @@
+import numpy as np
+import networkx as nx
+
 """Provide the primary functions."""
 
 
@@ -120,8 +123,7 @@ class BitString:
                 print("These are not the same")
 
 
-import numpy as np
-import networkx as nx
+
 
 def energy(bs: BitString, G: nx.Graph):
     """Compute energy of configuration, `bs`
