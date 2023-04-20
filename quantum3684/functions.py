@@ -63,8 +63,10 @@ class BitString:
     """
     Simple class to implement a string of bits
     """
-    def __init__(self, string):
-        self.string = string
+    def __init__(self, N=10):
+        self.config = np.zeros(N, dtype=int)
+        self.N = N
+        
 
     def __str__(self):
         value = ""
