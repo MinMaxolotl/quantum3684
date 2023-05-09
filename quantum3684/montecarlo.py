@@ -9,6 +9,7 @@ class BitString:
     def __init__(self, N=10):
         self.config = np.zeros(N, dtype=int)
         self.N = N
+        self.n_dim = 2**self.N
         
 
     def __str__(self):
@@ -90,7 +91,6 @@ class BitString:
                mag += 1
             else:
                 mag -= 1
-        print(mag)
         return mag 
 
 
@@ -129,7 +129,7 @@ class IsingHamiltonian:
             if i == 0:
                 conf.config[conf.config.index(i)] = -1
 
-        print(conf.config)
+        #print(conf.config)
         #for x in G.edges:
         #    print(x)
     
@@ -147,8 +147,6 @@ class IsingHamiltonian:
             Energy = Energy + 1
         else:
             Energy = Energy - 1
-
-        print(Energy)
             
         # for j in bs.config:
         #     if j == 1:
@@ -168,23 +166,33 @@ class IsingHamiltonian:
         return Energy
     
     def compute_average_values(self, conf: BitString, Temp: int):
-        
-        print(conf)
-        e = self.energy(conf)
-        avg_e = e*self.Gibbs(conf, Temp)
-        print(avg_e)
-        m = BitString.Magnetization(conf)
-        avg_m = m*self.Gibbs(conf, Temp)
-        print(avg_m)
+        E_top = 0
+        M_top = 0
+        Gibbs_sum = 0
 
-        return avg_e, avg_m
+        for i in range(conf.n_dim):
+            conf.set_int_config(i, digits=6)
+            e = self.energy(conf)
+            E_top += e*self.Gibbs(conf, Temp)
+            m = BitString.Magnetization(conf)
+            M_top += m*self.Gibbs(conf, Temp)
+            bottom = self.Gibbs(conf, Temp)
+            Gibbs_sum += bottom
+            
+        E = E_top/Gibbs_sum
+        M = M_top/Gibbs_sum
+
+        print(E)
+        print(M)
+
+        return E, M
     
 
     def Gibbs(self, conf: BitString, Temperature: int):
         k = 1  #1.38064852 * 10e-23
         eng = self.energy(conf)
         exponential = -eng/(k*Temperature)
-        probability = (math.e)**exponential
+        probability = np.exp(exponential)
         return probability
 
 
