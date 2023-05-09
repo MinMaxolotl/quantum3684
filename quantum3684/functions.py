@@ -3,7 +3,6 @@ import networkx as nx
 
 """Provide the primary functions."""
 
-
 def canvas(with_attribution=True):
     """
     Placeholder function to show example docstring (NumPy format).
@@ -66,7 +65,7 @@ class BitString:
     def __init__(self, N=10):
         self.config = np.zeros(N, dtype=int)
         self.N = N
-        
+
 
     def __str__(self):
         value = ""

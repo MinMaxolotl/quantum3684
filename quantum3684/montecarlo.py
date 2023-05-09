@@ -186,6 +186,8 @@ class IsingHamiltonian:
         exponential = -eng/(k*Temperature)
         probability = (math.e)**exponential
         return probability
+
+
     # Create a loop that does this for each kind of configuration
     # 
     #Compute energy of each congifuration, multiply each of them by gibbs and add
