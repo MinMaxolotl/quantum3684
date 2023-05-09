@@ -168,6 +168,7 @@ class IsingHamiltonian:
         return Energy
     
     def compute_average_values(self, conf: BitString, Temp: int):
+        
         print(conf)
         e = self.energy(conf)
         avg_e = e*self.Gibbs(conf, Temp)
