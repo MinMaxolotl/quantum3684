@@ -150,6 +150,11 @@ class IsingHamiltonian:
         # else:
         #     Energy -= self.J[-1]
         Energy += np.dot(self.mus, conf.config)
+
+        # # Converts -1 back to 0
+        # for i in conf.config:
+        #     if i == -1:
+        #         conf.config[conf.config.index(i)] = 0
         
         return Energy   
 
@@ -293,26 +298,29 @@ class IsingHamiltonian:
     #divide by sum of gibbs
     #Put my own ising notebook into examples.
 
-    def metropolis_montecarlo(ham, conf: BitString, T=2, nsweep=8000, nburn=2000):
+    def metropolis_montecarlo(self, conf: BitString, T=2, nsweep=8000, nburn=2000):
+        conf = self.metropolis_sweep(conf, T, nburn)
         E_array = np.zeros(nsweep)
         M_array = np.zeros(nsweep)
         EE_array = np.zeros(nsweep)
         MM_array = np.zeros(nsweep)
          
-        for i in range(nburn):
-            conf = ham.metropolis_sweep(conf, T, nburn)
+        #for i in range(nburn):
+        #    self.metropolis_sweep(conf, T, nburn)
 
-        for i in range(nsweep):
-            ham.metropolis_sweep(conf, T, nburn)
-            E_i = ham.energy(conf)
+        for i in range(1, nsweep):
+            conf = self.metropolis_sweep(conf, T, nburn=1)
+            E_i = self.energy(conf)
+            M_i = BitString.Magnetization(conf)
+
             E_array[i] = (E_array[i-1] * i + E_i) / (i+1)
             EE_array[i] = (EE_array[i-1] * i + (E_i**2)) / (i+1)
-            M_i = BitString.Magnetization(conf)
+            
             M_array[i] = (M_array[i-1] * i + M_i) / (i+1)
             MM_array[i] = (MM_array[i-1] * i + (M_i**2)) / (i+1)
 
-        # ham.metropolis_sweep(conf, T nburn)
-        # Energy = ham.energy(conf)
+        # self.metropolis_sweep(conf, T nburn)
+        # Energy = self.energy(conf)
         # Magnetization = BitString.Magnetization(conf)
         # E_array[0] = Energy
         # M_array[0] = Magnetization
@@ -320,8 +328,8 @@ class IsingHamiltonian:
         # MM_array[0] = Magnetization*Magnetization
 
         # for i in range(1, nsweep):
-        #     ham.metropolis_sweep(conf, T, nburn)
-        #     Energy = ham.energy(conf)
+        #     self.metropolis_sweep(conf, T, nburn)
+        #     Energy = self.energy(conf)
         #     Magnetization = BitString.Magnetization(conf)
         #     E_array[i] = ((E_array[i-1]*i) + Energy)/(i+1)
         #     EE_array[i] = ((EE_array[i-1]*i) + Energy*Energy)/(i+1)
@@ -332,30 +340,45 @@ class IsingHamiltonian:
 
 
     def e_flip(self, i: int, config: BitString):
-        test = copy.deepcopy(config)
-        test.flip(i)
-        de = self.energy(test) - self.energy(config)
+        de = 0.0
+        # d_i = 0
+        # for j in self.J[i]:
+        #     de -= 2*(2*config.config[i]-1)*self.mus[i]
+        #     de -= 2*(2*config.config[i]-1)*(2*config.config[j[0]]-1)*j[1]
 
-        return test, de
+        # if config.config[i] == 1:
+        #     d_i = -1
+
+        # for j in self.J[i]:
+        #     de += (2.0*config.config[j[0]]-1.0) * j[1] * d_i
+
+        # de += self.mus[i] * d_i
+
+        config_trial = copy.deepcopy(config) 
+        config_trial.flip(i)
+        de = self.energy(config_trial) - self.energy(config)
+
+        return de
+
 
     def metropolis_sweep(self, config: BitString, Temp:float, nburn):
-        # for i in range(nburn):
-        for j in range(config.N):
-            de = self.e_flip(j, config)[1]
-            Wa_b = np.exp(-(de/Temp))
-            accept = True
+        for i in range(nburn):
+            for j in range(config.N):
+                de = self.e_flip(j, config)
+                Wa_b = np.exp(-de/Temp)
+                accept = True
 
-            if (de > 0):
-                r = random.random()
+                if (de > 0):
+                    r = random.random()
 
-                if r > Wa_b:
-                    accept = False
+                    if r > Wa_b:
+                        accept = False
 
-            if (accept == True):
-                config.flip(j)
+                if (accept == True):
+                    config.flip(j)
 
-            else:
-                pass    
+                else:
+                    pass    
 
         return config
 
