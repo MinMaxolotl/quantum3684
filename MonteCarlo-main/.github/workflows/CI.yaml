@@ -55,27 +55,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Testing Dependencies
-      shell: bash
-      run: |
-        python -m pip install -U pytest pytest-cov codecov
-
-    - name: Install package
-
-        # conda setup requires this special shell
-        shell: bash -l {0}
-        run: |
-          python -m pip install . --no-deps
-          conda list
-
-
-    - name: Run tests
-
-      shell: bash
-
-      run: |
-        pytest -v --cov=montecarlo --cov-report=xml --color=yes montecarlo/tests/
-
       name: test
       channels:
       - conda-forge
@@ -97,6 +76,28 @@ jobs:
         # Pip-only installs
       #- pip:
       #  - codecov
+
+
+    - name: Testing Dependencies
+      shell: bash
+      run: |
+        python -m pip install -U pytest pytest-cov codecov
+
+    - name: Install package
+
+        # conda setup requires this special shell
+        shell: bash -l {0}
+        run: |
+          python -m pip install . --no-deps
+          conda list
+
+
+    - name: Run tests
+
+      shell: bash
+
+      run: |
+        pytest -v --cov=montecarlo --cov-report=xml --color=yes montecarlo/tests/
 
     - name: CodeCov
       uses: codecov/codecov-action@v1
