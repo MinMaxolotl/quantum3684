@@ -300,9 +300,9 @@ class IsingHamiltonian:
         MM_array = np.zeros(nsweep)
 
         for i in range(nburn):
-            ham.metropolis_sweep(conf, T)
+            ham.metropolis_sweep(conf, T=T)
 
-        ham.metropolis_sweep(conf, T)
+        ham.metropolis_sweep(conf, T=T)
         Energy = ham.energy(conf)
         Magnetization = BitString.Magnetization(conf)
         E_array[0] = Energy
@@ -332,7 +332,7 @@ class IsingHamiltonian:
     def metropolis_sweep(self, config: BitString, Temp:int):
         for i in range(config.N):
             de = self.e_flip(i, config)[1]
-            print(config.config)
+
             if (de == 0):
                 if config.config[i] == -1:
                     config.config[i] = 1
