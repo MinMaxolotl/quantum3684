@@ -294,30 +294,34 @@ class IsingHamiltonian:
     #Put my own ising notebook into examples.
 
     def metropolis_montecarlo(ham, conf: BitString, T=2, nsweep=8000, nburn=2000):
-        E_array = np.zeros(nsweep)
-        M_array = np.zeros(nsweep)
-        EE_array = np.zeros(nsweep)
-        MM_array = np.zeros(nsweep)
+        conf = ham.metropolis_sweep(conf, T, nburn)
+        E_array = M_array = EE_array = MM_array = np.zeros(nsweep)
+         
+        for i in range(nsweep):
+            ham.metropolis_sweep(conf, T, nburn)
+            E_i = ham.energy(conf)
+            E_array[i] = (E_array[i-1] * i + E_i) / (i+1)
+            EE_array[i] = (EE_array[i-1] * i + (E_i**2)) / (i+1)
+            M_i = BitString.Magnetization(conf)
+            M_array[i] = (M_array[i-1] * i + M_i) / (i+1)
+            MM_array[i] = (MM_array[i-1] * i + (M_i**2)) / (i+1)
 
-        for i in range(nburn):
-            ham.metropolis_sweep(conf, T=T)
+        # ham.metropolis_sweep(conf, T nburn)
+        # Energy = ham.energy(conf)
+        # Magnetization = BitString.Magnetization(conf)
+        # E_array[0] = Energy
+        # M_array[0] = Magnetization
+        # EE_array[0] = Energy*Energy
+        # MM_array[0] = Magnetization*Magnetization
 
-        ham.metropolis_sweep(conf, T=T)
-        Energy = ham.energy(conf)
-        Magnetization = BitString.Magnetization(conf)
-        E_array[0] = Energy
-        M_array[0] = Magnetization
-        EE_array[0] = Energy*Energy
-        MM_array[0] = Magnetization*Magnetization
-
-        for i in range(1, nsweep):
-            ham.metropolis_sweep(conf, T)
-            Energy = ham.energy(conf)
-            Magnetization = BitString.Magnetization(conf)
-            E_array[i] = ((E_array[i-1]*i) + Energy)/(i+1)
-            EE_array[i] = ((EE_array[i-1]*i) + Energy*Energy)/(i+1)
-            M_array[i] = ((M_array[i-1]*i) + Magnetization)/(i+1)
-            MM_array[i] = ((MM_array[i-1]*i) + Magnetization*Magnetization)/(i+1)
+        # for i in range(1, nsweep):
+        #     ham.metropolis_sweep(conf, T, nburn)
+        #     Energy = ham.energy(conf)
+        #     Magnetization = BitString.Magnetization(conf)
+        #     E_array[i] = ((E_array[i-1]*i) + Energy)/(i+1)
+        #     EE_array[i] = ((EE_array[i-1]*i) + Energy*Energy)/(i+1)
+        #     M_array[i] = ((M_array[i-1]*i) + Magnetization)/(i+1)
+        #     MM_array[i] = ((MM_array[i-1]*i) + Magnetization*Magnetization)/(i+1)
     
         return E_array, M_array, EE_array, MM_array
 
@@ -329,24 +333,26 @@ class IsingHamiltonian:
 
         return test, de
 
-    def metropolis_sweep(self, config: BitString, Temp:int):
-        for i in range(config.N):
-            de = self.e_flip(i, config)[1]
+    def metropolis_sweep(self, config: BitString, Temp:float, nburn):
+        for i in range(nburn):
+            for j in range(config.N):
+                de = self.e_flip(j, config)[1]
+                Wa_b = np.exp(-(de/Temp))
+                accept = True
 
-            if (de == 0):
-                if config.config[i] == -1:
-                    config.config[i] = 1
-                else:
-                    config.config = -1
+                if (de > 0):
+                    r = random.random()
 
-            Wa_b = np.exp(-(de/Temp))
-            
-            if (random.random() < Wa_b):
-                if config.config[i] == -1:
-                    config.config[i] = 1
+                    if r > Wa_b:
+                        accept = False
+
+                if (accept == True):
+                    config.flip(j)
+
                 else:
-                    config.config[i] = -1
+                    pass
 
         return config
+
 
 
