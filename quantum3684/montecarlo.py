@@ -294,9 +294,14 @@ class IsingHamiltonian:
     #Put my own ising notebook into examples.
 
     def metropolis_montecarlo(ham, conf: BitString, T=2, nsweep=8000, nburn=2000):
-        conf = ham.metropolis_sweep(conf, T, nburn)
-        E_array = M_array = EE_array = MM_array = np.zeros(nsweep)
+        E_array = np.zeros(nsweep)
+        M_array = np.zeros(nsweep)
+        EE_array = np.zeros(nsweep)
+        MM_array = np.zeros(nsweep)
          
+        for i in range(nburn):
+            conf = ham.metropolis_sweep(conf, T, nburn)
+
         for i in range(nsweep):
             ham.metropolis_sweep(conf, T, nburn)
             E_i = ham.energy(conf)
@@ -334,23 +339,23 @@ class IsingHamiltonian:
         return test, de
 
     def metropolis_sweep(self, config: BitString, Temp:float, nburn):
-        for i in range(nburn):
-            for j in range(config.N):
-                de = self.e_flip(j, config)[1]
-                Wa_b = np.exp(-(de/Temp))
-                accept = True
+        # for i in range(nburn):
+        for j in range(config.N):
+            de = self.e_flip(j, config)[1]
+            Wa_b = np.exp(-(de/Temp))
+            accept = True
 
-                if (de > 0):
-                    r = random.random()
+            if (de > 0):
+                r = random.random()
 
-                    if r > Wa_b:
-                        accept = False
+                if r > Wa_b:
+                    accept = False
 
-                if (accept == True):
-                    config.flip(j)
+            if (accept == True):
+                config.flip(j)
 
-                else:
-                    pass
+            else:
+                pass    
 
         return config
 
