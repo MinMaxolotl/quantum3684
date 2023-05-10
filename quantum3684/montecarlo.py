@@ -24,10 +24,10 @@ class BitString:
         return value 
 
     def flip(self, index):
-        if self.config[index] == 0:
+        if self.config[index] == -1:
             self.config[index] = 1
         else: 
-            self.config[index] = 0
+            self.config[index] = -1
 
     # def __len__(self):
     #     x = len(self.string)
@@ -293,7 +293,7 @@ class IsingHamiltonian:
     #divide by sum of gibbs
     #Put my own ising notebook into examples.
 
-    def metropolis_montecarlo(ham, conf: BitString, T=1, nsweep=3000, nburn=300):
+    def metropolis_montecarlo(ham, conf: BitString, T=2, nsweep=8000, nburn=2000):
         E_array = np.zeros(nsweep)
         M_array = np.zeros(nsweep)
         EE_array = np.zeros(nsweep)
@@ -314,10 +314,10 @@ class IsingHamiltonian:
             ham.metropolis_sweep(conf, T)
             Energy = ham.energy(conf)
             Magnetization = BitString.Magnetization(conf)
-            E_array[i] = ((E_array[i-1]*i)+Energy)/(i+1)
-            EE_array[i] = ((EE_array[i-1]*i)+Energy*Energy)/(i+1)
-            M_array[i] = ((M_array[i-1]*i)+ Magnetization)/(i+1)
-            MM_array[i] = ((MM_array[i-1]*i)+ Magnetization*Magnetization)/(i+1)
+            E_array[i] = ((E_array[i-1]*i) + Energy)/(i+1)
+            EE_array[i] = ((EE_array[i-1]*i) + Energy*Energy)/(i+1)
+            M_array[i] = ((M_array[i-1]*i) + Magnetization)/(i+1)
+            MM_array[i] = ((MM_array[i-1]*i) + Magnetization*Magnetization)/(i+1)
     
         return E_array, M_array, EE_array, MM_array
 
@@ -332,20 +332,20 @@ class IsingHamiltonian:
     def metropolis_sweep(self, config: BitString, Temp:int):
         for i in range(config.N):
             de = self.e_flip(i, config)[1]
-
+            print(config.config)
             if (de == 0):
-                if config.config[i] == 0:
+                if config.config[i] == -1:
                     config.config[i] = 1
                 else:
-                    config.config = 0
+                    config.config = -1
 
-            Wa_b = np.exp(-(self.energy(de))/Temp)
-
-            if (random() < Wa_b):
-                if config.config[i] == 0:
+            Wa_b = np.exp(-(de/Temp))
+            
+            if (random.random() < Wa_b):
+                if config.config[i] == -1:
                     config.config[i] = 1
                 else:
-                    config.config[i] = 0
+                    config.config[i] = -1
 
         return config
 
