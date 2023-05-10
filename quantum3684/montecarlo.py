@@ -25,9 +25,9 @@ class BitString:
 
     def flip(self, index):
         if self.config[index] == 0:
-            self.string[index] = 1
+            self.config[index] = 1
         else: 
-            self.string[index] = 0
+            self.config[index] = 0
 
     # def __len__(self):
     #     x = len(self.string)
@@ -293,15 +293,34 @@ class IsingHamiltonian:
     #divide by sum of gibbs
     #Put my own ising notebook into examples.
 
-    def metropolis_montecarlo(self, ham: IsingHamiltonian, conf: BitString, Temp:int, nsweep:int, nburn:int):
+    def metropolis_montecarlo(ham, conf: BitString, T=1, nsweep=3000, nburn=300):
         E_array = np.zeros(nsweep)
         M_array = np.zeros(nsweep)
         EE_array = np.zeros(nsweep)
-        MM_array = np.zerpos(nsweep)
+        MM_array = np.zeros(nsweep)
 
         for i in range(nburn):
-            ham.metropolis_sweep(conf, Temp)
+            ham.metropolis_sweep(conf, T)
+
+        ham.metropolis_sweep(conf, T)
+        Energy = ham.energy(conf)
+        Magnetization = BitString.Magnetization(conf)
+        E_array[0] = Energy
+        M_array[0] = Magnetization
+        EE_array[0] = Energy*Energy
+        MM_array[0] = Magnetization*Magnetization
+
+        for i in range(1, nsweep):
+            ham.metropolis_sweep(conf, T)
+            Energy = ham.energy(conf)
+            Magnetization = BitString.Magnetization(conf)
+            E_array[i] = ((E_array[i-1]*i)+Energy)/(i+1)
+            EE_array[i] = ((EE_array[i-1]*i)+Energy*Energy)/(i+1)
+            M_array[i] = ((M_array[i-1]*i)+ Magnetization)/(i+1)
+            MM_array[i] = ((MM_array[i-1]*i)+ Magnetization*Magnetization)/(i+1)
     
+        return E_array, M_array, EE_array, MM_array
+
 
     def e_flip(self, i: int, config: BitString):
         test = copy.deepcopy(config)
