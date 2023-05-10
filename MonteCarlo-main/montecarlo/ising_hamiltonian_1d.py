@@ -2,8 +2,8 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import random
 import copy as cp
-        
-        
+
+
 class IsingHamiltonian1D:
     """Class for 1D Hamiltonian
         
@@ -213,3 +213,4 @@ class IsingHamiltonian1D:
         HC = (EE - E*E)/(T*T)
         MS = (MM - M*M)/T
         return E, M, HC, MS
+    
