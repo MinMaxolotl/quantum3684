@@ -1,6 +1,11 @@
 import numpy as np
 import math
 import networkx as nx
+import matplotlib as mpl
+from matplotlib import pyplot as plt
+import random
+import scipy
+import copy
 
 class BitString:
     """
@@ -18,11 +23,11 @@ class BitString:
             value += str(val)
         return value 
 
-    # def flip(self, index):
-    #     if self.config[index] == 0:
-    #         self.string[index] = 1
-    #     else: 
-    #         self.string[index] = 0
+    def flip(self, index):
+        if self.config[index] == 0:
+            self.string[index] = 1
+        else: 
+            self.string[index] = 0
 
     # def __len__(self):
     #     x = len(self.string)
@@ -75,13 +80,15 @@ class BitString:
             return "spin configuration not set propperly"
     
     def set_int_config(self, integer, digits=None):
-        binary = '{0:b}'.format(integer)
-        self.config = list(binary)
-        if digits != None:
-            for x in range(0, digits - len(self.config)): 
-                self.config = ['0'] + self.config
-        self.config = list(map(int, self.config))
-        #self.config = "".join(self.config)
+        # binary = '{0:b}'.format(integer)
+        # self.config = list(binary)
+        # if digits != None:
+        #     for x in range(0, digits - len(self.config)): 
+        #         self.config = ['0'] + self.config
+        # self.config = list(map(int, self.config))
+        # #self.config = "".join(self.config)
+        self.config = np.array([int(i) for i in np.binary_repr(integer, width=self.N)])
+        
 
     def Magnetization(self):
         mag = 0
@@ -92,12 +99,28 @@ class BitString:
             else:
                 mag -= 1
         return mag 
+    
+    def initialize(self, M):
+        self.M = M
+        MagArray = np.zeros(self.N, dtype=int)
 
+        s = -1
+
+        for i in range(len(MagArray)):
+            if i < M:
+                MagArray[i] = 1
+            else:
+                MagArray[i] = s
+                s = s*-1
+        
+        print(MagArray)
+
+                
 
 
 
 class IsingHamiltonian:
-    def __init__(self, J =[[()]], mus=0):
+    def __init__(self, J: nx.Graph, mus=0.1):
         self.J = J
         self.mus = mus
 
@@ -114,27 +137,30 @@ class IsingHamiltonian:
 
         # # We calculate energy based of the list of 0's and 1's
         #for i in range(config.N):
-        for i in range(len(conf.config)-1):   
-            if conf.config[i] == conf.config[i+1]:
-                Energy = Energy + 1
-            else:
-                Energy = Energy - 1
+        for i in range(len(conf.config)-1):  
+            for j in self.J[i]: 
+                if j[0] > i:    
+                    if conf.config[i] == conf.config[j[0]]:
+                        Energy += j[1]
+                    else:
+                        Energy -= j[1]
+
+        # if conf.config[0] == conf.config[-1]:
+        #     Energy += self.J[-1]
+        # else:
+        #     Energy -= self.J[-1]
+        Energy += np.dot(self.mus, conf.config)
         
-        if conf.config[0] == conf.config[-1]:
-            Energy = Energy + 1
-        else:
-            Energy = Energy - 1
+        return Energy   
 
-        Energy = Energy + np.dot(conf.config, self.mus)     
-
-        # # Converts -1 back to 0
-        for i in conf.config:
-            if i == -1:
-                conf.config[conf.config.index(i)] = 0
+        # # # Converts -1 back to 0
+        # for i in conf.config:
+        #     if i == -1:
+        #         conf.config[conf.config.index(i)] = 0
     
 
 
-        return Energy
+        # return Energy
 
         # Energy = 0
         # for i in range(conf.N):
@@ -149,6 +175,43 @@ class IsingHamiltonian:
         # Energy += np.dot(self.mus, 2*conf.config-1)
 
         # return Energy
+        
+
+        # Energy = 0
+        # BitString.string = list(map(int, BitString.string))
+
+        #  # 0 = -1, 1 = 1
+        # for i in BitString.string:
+        #     if i == 0:
+        #         BitString.string[BitString.string.index(i)] = -1
+
+        # #print(BitString.string)
+
+    
+    
+        # orientation = BitString.string  #Says whether it is up or down, list of node values
+
+        # #for x in G.edges:
+        # #    print(x)
+        
+        # #size = BitString.__len__
+
+        # # We want to multiply the interacting nodes together
+        # for e in G.edges:
+        #     i_idx = e[0]
+        #     j_idx = e[1]
+        #     si = orientation[i_idx]
+        #     sj = orientation[j_idx]
+
+        #     sisj = si*sj
+        #     Energy += sisj*(G.edges[e]['weight']) 
+
+        # # Converts -1 back to 0
+        # for i in BitString.string:
+        #     if i == -1:
+        #         BitString.string[BitString.string.index(i)] = 0
+
+        # return Energy + np.dot(conf.config, self.mus)
 
 
     
@@ -183,27 +246,36 @@ class IsingHamiltonian:
        
         E = 0
         M = 0
+        E_2 = 0
+        M_2 = 0
         Gibbs_sum = 0
 
         for i in range(conf.n_dim):
-            conf.set_int_config(i, digits=6)
-            e = self.energy(conf)
-            Gibbs = np.exp(-e/Temp)
+            conf.set_int_config(i)
+            eng = self.energy(conf)
+            Gibbs = np.exp(-(eng/Temp))
             print("This is the config: " + str(conf.config))
-            print("This is the energy: " + str(e))
+            print("This is the energy: " + str(eng))
             print("This is the Gibbs: " + str(Gibbs))
-            E += e*Gibbs
-            print("This is the current E: " + str(E))
+            E += eng*Gibbs
+            E_2 += eng*eng*Gibbs
+            #print("This is the current E: " + str(E))
             m = BitString.Magnetization(conf)
+            #print("spin sum: " + str(m))
+            #print("Gibbs at i: " + str(Gibbs))
             M += m*Gibbs
+            M_2 += m*m*Gibbs
             Gibbs_sum += Gibbs
-            
+        
         E = E/Gibbs_sum
+        HC_1 = E_2/Gibbs_sum
+        EE = E*E
         M = M/Gibbs_sum
-        HC = 0
-        MS = 0
+        MS_1 = M_2/Gibbs_sum
+        MM = M*M
+        HC = (HC_1 - EE)/(Temp**2)
+        MS = (MS_1 - MM)/(Temp)
 
-        print(Gibbs_sum)
         #print(M)
 
         return E, M, HC, MS
@@ -220,9 +292,42 @@ class IsingHamiltonian:
     #Compute energy of each congifuration, multiply each of them by gibbs and add
     #divide by sum of gibbs
     #Put my own ising notebook into examples.
+
+    def metropolis_montecarlo(self, ham: IsingHamiltonian, conf: BitString, Temp:int, nsweep:int, nburn:int):
+        E_array = np.zeros(nsweep)
+        M_array = np.zeros(nsweep)
+        EE_array = np.zeros(nsweep)
+        MM_array = np.zerpos(nsweep)
+
+        for i in range(nburn):
+            ham.metropolis_sweep(conf, Temp)
     
 
+    def e_flip(self, i: int, config: BitString):
+        test = copy.deepcopy(config)
+        test.flip(i)
+        de = self.energy(test) - self.energy(config)
 
+        return test, de
 
+    def metropolis_sweep(self, config: BitString, Temp:int):
+        for i in range(config.N):
+            de = self.e_flip(i, config)[1]
+
+            if (de == 0):
+                if config.config[i] == 0:
+                    config.config[i] = 1
+                else:
+                    config.config = 0
+
+            Wa_b = np.exp(-(self.energy(de))/Temp)
+
+            if (random() < Wa_b):
+                if config.config[i] == 0:
+                    config.config[i] = 1
+                else:
+                    config.config[i] = 0
+
+        return config
 
 
