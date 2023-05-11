@@ -180,3 +180,5 @@ def energy(bs: BitString, G: nx.Graph):
     return Energy
 
 
+# THIS IS AN OLD FILE THAT CONTAINED OLDER VERSIONS OF FUNCTIONS
+# USED IN PREVIOUS ASSIGNMENTS
