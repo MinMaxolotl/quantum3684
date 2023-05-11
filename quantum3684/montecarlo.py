@@ -45,33 +45,33 @@ class BitString:
     #     zeros = len(self.string) - w
     #     return zeros
 
-    def int(self):
-        sum = 0
-        for i in range(len(self.config)):
-            if self.config[len(self.config)-1-i] == 1:
-                sum += 2**i
-            if self.config[len(self.config)-1-i] == '1':
-                sum += 2**i
-        return sum
+    # def int(self):
+    #     sum = 0
+    #     for i in range(len(self.config)):
+    #         if self.config[len(self.config)-1-i] == 1:
+    #             sum += 2**i
+    #         if self.config[len(self.config)-1-i] == '1':
+    #             sum += 2**i
+    #     return sum
 
-    def set_int(self, integer, digits=None):
-        binary = '{0:b}'.format(integer)
-        self.config = list(binary)
-        if digits != None:
-            for x in range(0, digits - len(self.config)): 
-                self.config = ['0'] + self.config
-        self.config = list(map(int, self.config))
-        #self.config = "".join(self.config)
+    # def set_int(self, integer, digits=None):
+    #     binary = '{0:b}'.format(integer)
+    #     self.config = list(binary)
+    #     if digits != None:
+    #         for x in range(0, digits - len(self.config)): 
+    #             self.config = ['0'] + self.config
+    #     self.config = list(map(int, self.config))
+    #     #self.config = "".join(self.config)
 
-    def __eq__(self, other):
-        if isinstance(other, BitString):
+    # def __eq__(self, other):
+    #     if isinstance(other, BitString):
 
 
-            if self.config == other.config:
-                print("These are the same")
+    #         if self.config == other.config:
+    #             print("These are the same")
 
-            else:
-                print("These are not the same")
+    #         else:
+    #             print("These are not the same")
 
     def set_config(self, conf):
         if (len(conf) == self.N):
@@ -102,18 +102,19 @@ class BitString:
     
     def initialize(self, M):
         self.M = M
-        MagArray = np.zeros(self.N, dtype=int)
+        self.config = np.zeros(self.N, dtype=int)
 
         s = -1
 
-        for i in range(len(MagArray)):
+        for i in range(len(self.config)):
             if i < M:
-                MagArray[i] = 1
+                self.config[i] = 1
             else:
-                MagArray[i] = s
+                self.config[i] = s
                 s = s*-1
         
-        print(MagArray)
+        return self.config
+       
 
                 
 
@@ -354,9 +355,9 @@ class IsingHamiltonian:
 
         # de += self.mus[i] * d_i
 
-        config_trial = copy.deepcopy(config) 
-        config_trial.flip(i)
-        de = self.energy(config_trial) - self.energy(config)
+        test = copy.deepcopy(config) 
+        test.flip(i)    
+        de = self.energy(test) - self.energy(config)
 
         return de
 
